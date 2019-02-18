@@ -6,7 +6,7 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/16 20:42:37 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/17 21:02:08 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/18 14:42:01 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,10 +31,16 @@ static void	init_prog(t_quebox *qbox, char *filename)
 			(const char **)&program_buffer, &program_size, &ret);
 	free(program_buffer);
 	if(ret)
-   		clean_all(NULL, qbox, ER_PROG);
+   		clean_all(NULL, qbox, "cant create program from file\n");
 	if ((ret = clBuildProgram(qbox->prog, 0, NULL, NULL, NULL, NULL)))
-	{printf("build prog: %d\n", ret);
-		clean_all(NULL, qbox, ER_PROG);}
+	{
+		size_t	log_size;
+		clGetProgramBuildInfo(qbox->prog, qbox->dev, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+		char *log = (char *)ft_memalloc(log_size);
+		clGetProgramBuildInfo(qbox->prog, qbox->dev, CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
+		printf("%s\n", log);
+		clean_all(NULL, qbox, "cant build program\n");
+	}
 }
 
 void	init_queue(t_quebox *qbox)
@@ -43,38 +49,52 @@ void	init_queue(t_quebox *qbox)
 	cl_platform_id	platform;
 
 	if (clGetPlatformIDs(1, &platform, NULL))
-		clean_all(NULL, NULL, ER_PLT);
+		clean_all(NULL, NULL, "cant identify a platform\n");
 	if (clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &(qbox->dev), NULL))
-		clean_all(NULL, NULL, ER_DEV);
+		clean_all(NULL, NULL, "cant access device\n");
 	qbox->ctx = clCreateContext(NULL, 1, &(qbox->dev), NULL, NULL, &ret);
 	if (ret)
-		clean_all(NULL, NULL, ER_CONT);
+		clean_all(NULL, NULL, "cant create context\n");
 	qbox->queue = clCreateCommandQueue(qbox->ctx, qbox->dev, 0, &ret);
 	if (ret)
-		clean_all(NULL, qbox, ER_QE);
+		clean_all(NULL, qbox, "cant create command queue\n");
 	init_prog(qbox, PROGRAM_FILE);
 }
 
 void	init_kern(t_kernbox *kbox, char *kern_name, t_quebox *qbox)
 {
-//	cl_mem	map_buffer;
 	int		ret;
-//	int		n, x, y;
 
 	kbox->kern = clCreateKernel(qbox->prog, kern_name, &ret);
 	if (ret)
-		clean_all(kbox, qbox, ER_KERN);
-	kbox->map = (int *)ft_memalloc(IMG_SIZE * IMG_SIZE * sizeof(int));
+		clean_all(kbox, qbox, "cant create kernel\n");
+	kbox->map = (int *)ft_memalloc(MAP_LEN * sizeof(int));
 	kbox->map_buf = clCreateBuffer(qbox->ctx, CL_MEM_READ_WRITE |
-		CL_MEM_COPY_HOST_PTR, IMG_SIZE * IMG_SIZE * sizeof(int), kbox->map, &ret);
+		CL_MEM_COPY_HOST_PTR, MAP_LEN * sizeof(int), kbox->map, &ret);
 	if (ret)
 		clean_all(kbox, qbox, "cant create buffer\n");
-//	n = 100000;
-//	x = -2.0;
-//	y = 2.0;
 	if (clSetKernelArg(kbox->kern, 0, sizeof(cl_mem), &(kbox->map_buf)))
-//			clSetKernelArg(kbox->kern, 1, sizeof(int), &n) ||
-//			clSetKernelArg(kbox->kern, 2, sizeof(float), &x) ||
-//			clSetKernelArg(kbox->kern, 3, sizeof(float), &y))
 		clean_all(kbox, qbox, "cant set arguments for kernel\n");
+}
+
+void	evolve_kern(t_kernbox *kbox, t_quebox *qbox, float *param)
+{
+	int		ret;
+	size_t	items;
+
+	kbox->f_buf = clCreateBuffer(qbox->ctx, CL_MEM_READ_WRITE |
+		CL_MEM_COPY_HOST_PTR, 3 * sizeof(float), param, &ret);
+	if (ret)
+		clean_all(kbox, qbox, "cant create buffer\n");
+	if (clSetKernelArg(kbox->kern, 1, sizeof(cl_mem), &(kbox->f_buf)))
+		clean_all(kbox, qbox, "cant set arguments for kernel\n");
+	items = MAP_LEN;
+	if (clEnqueueNDRangeKernel(qbox->queue, kbox->kern, 1, NULL,
+			&items, NULL, 0, NULL, NULL))
+			clean_all(kbox, qbox, "cant enqueue the kernel\n");
+		clFinish(qbox->queue);
+	if (clEnqueueReadBuffer(qbox->queue, kbox->map_buf, CL_TRUE, 0,
+			MAP_LEN, kbox->map, 0, NULL, NULL))
+		clean_all(kbox, qbox, "cant read from buffer\n");
+//	paint_it(kbox->map, ibox);
 }

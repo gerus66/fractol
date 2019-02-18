@@ -6,7 +6,7 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 15:55:54 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/18 11:51:06 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/18 14:32:06 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,10 +50,12 @@ typedef struct	s_kernbox
 {
 	cl_kernel			kern;
 	cl_mem				map_buf;
+	cl_mem				f_buf;
 	int					*map;
 }				t_kernbox;
 
 # define IMG_SIZE 1000
+# define MAP_LEN 1000000
 # define WND_W 1300
 # define WND_H 1000
 # define PROGRAM_FILE "create_map.cl"
@@ -62,16 +64,11 @@ typedef struct	s_kernbox
 # define ER_MLX "cannot initialize mlx\n"
 # define ER_WND "cannot create new window\n"
 # define ER_IMG "cannot create new image\n"
-# define ER_PLT "cannot identify a platform\n"
-# define ER_DEV "cannot access device\n"
-# define ER_CONT "cannot create context\n"
-# define ER_QE "cannot create command queue\n"
-# define ER_PROG "cannot create program from file\n"
-# define ER_KERN "cannot create kernel\n"
 # define USAGE "Usage will be here\n"
 
 void			init_queue(t_quebox *qbox);
 void			init_kern(t_kernbox *kbox, char *kern_name, t_quebox *qbox);
+void			evolve_kern(t_kernbox *kbox, t_quebox *qbox, float *param);
 void			clean_all(t_kernbox *kbox, t_quebox *qbox, char *msg);
 void			paint_it(int *map, t_imgbox *ibox);
 

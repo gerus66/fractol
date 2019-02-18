@@ -6,7 +6,7 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/16 15:41:06 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/18 12:57:35 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/18 14:17:18 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,8 @@ static void		put_pixel_to_img(void *img, int x, int y, int color)
 	}
 }
 
+#define N_VAL 50000
+
 static int	m_color(void *mlx, int n)
 {
 	t_color	color;
@@ -52,12 +54,14 @@ static int	m_color(void *mlx, int n)
 
 	if (n == 1 || n == 0)
 		return (mlx_get_color_value(mlx, 0));
+	if (n > N_VAL)
+		return (mlx_get_color_value(mlx, COLOR_OUT));
 	color.cl = 0;
 	out.cl = COLOR_OUT;
 	in.cl = COLOR_IN;
 	i = -1;
 	while (++i < 4)
-		color.cl4[i] = in.cl4[i] + (out.cl4[i] - in.cl4[i]) / (50000 / n);
+		color.cl4[i] = in.cl4[i] + (out.cl4[i] - in.cl4[i]) / (N_VAL / n);
 	return (mlx_get_color_value(mlx, color.cl));
 }
 

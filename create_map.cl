@@ -1,4 +1,10 @@
-kernel void	mandelbrot(global int *map)
+/*
+** p.s0 - first_point.x
+** p.s1	- first_point.y
+** p.s2 - scale
+*/
+
+kernel void	mandelbrot(global int *map, global float3 *p)
 {
 	int		index;
 	float	sc;
@@ -7,11 +13,13 @@ kernel void	mandelbrot(global int *map)
 	float2	f;
 	float2	prev;
 	int		i;
-
+	float2	first;
+	
 	index = get_global_id(0);
-	sc = 0.002;
+	sc = p[0].s2;
 	n = 100000;
-	c = (float2)(-1.0 + (index % 1000) * sc, 1.0 - (index / 1000) * sc);
+	first = (float2)(p[0].s0, p[0].s1);
+	c = (float2)(first.x + (index % 1000) * sc, first.y - (index / 1000) * sc);
 	f = (float2)(0, 0);
 	i = -1;
 	while (++i < n && f.x * f.x + f.y * f.y < 4)
