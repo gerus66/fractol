@@ -6,7 +6,7 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/16 20:42:37 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/19 22:18:29 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/19 23:26:40 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,8 +104,8 @@ void	reprint_all(t_kernbox *kbox, t_quebox *qbox, t_imgbox *ibox)
 			WND_H - IMG_SIZE);
 	mlx_put_image_to_window(ibox->mlx, ibox->wnd, ibox->eraser, 0, 0);
 	print_menu(ibox->mlx, ibox->wnd);
-	mlx_string_put(ibox->mlx, ibox->wnd, 150, 20, HELP_COLOR, 
+	mlx_string_put(ibox->mlx, ibox->wnd, 150, 150, HELP_COLOR, 
 			ft_itoa((ssize_t)(1 / kbox->f[2])));
-	mlx_string_put(ibox->mlx, ibox->wnd, 150, 50, HELP_COLOR, 
+	mlx_string_put(ibox->mlx, ibox->wnd, 200, 250, HELP_COLOR, 
 			ft_itoa(kbox->f[3]));
 }
