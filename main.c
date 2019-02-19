@@ -6,13 +6,11 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/16 15:47:17 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/18 14:42:11 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/19 16:44:32 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fractol.h"
-
-#define IBOX ((t_imgbox *)param)
 
 void	clean_all(t_kernbox *kbox, t_quebox *qbox, char *msg)
 {
@@ -21,7 +19,6 @@ void	clean_all(t_kernbox *kbox, t_quebox *qbox, char *msg)
 	{
 		clReleaseKernel(kbox->kern);
 		clReleaseMemObject(kbox->map_buf);
-		clReleaseMemObject(kbox->f_buf);
 		free(kbox->map);
 	}
 	if (qbox)
@@ -33,12 +30,50 @@ void	clean_all(t_kernbox *kbox, t_quebox *qbox, char *msg)
 	exit(0);
 }
 
+/*
+** handle keyboard events
+*/
+
 static int	keyboard(int key, void *param)
 {
-	param++;//
 	if (key == 53)
-		exit(0);//TODO
-	//	clean_all((t_kernbox *)(param + 2), (t_quebox *)(param + 1), NULL);
+		clean_all((t_kernbox *)(((int **)param)[0]),
+			(t_quebox *)(((int **)param)[1]), NULL);
+	return (0);
+}
+
+/*
+** handle mouse events
+*/
+
+static int	mouse(int key, int x1, int x2, void *param)
+{
+	t_kernbox	*kbox;
+	t_quebox	*qbox;
+	t_imgbox	*ibox;
+	float		tmp;
+
+	kbox = (t_kernbox *)(((int **)param)[0]);
+	qbox = (t_quebox *)(((int **)param)[1]);
+	ibox = (t_imgbox *)(((int **)param)[2]);
+	if (key == 5)
+	{
+	//	tmp = kbox->f[2];
+		kbox->f[0] += (float)(x1 - HELP_W) * kbox->f[2] * (1 - SC_COEF);
+		kbox->f[1] -= (float)x2 * kbox->f[2] * (1 - SC_COEF);
+		kbox->f[2] *= SC_COEF;
+	reprint_all(kbox, qbox, ibox);
+	}
+	else if (key == 4)
+	{
+		tmp = kbox->f[2];
+		kbox->f[2] /= SC_COEF;
+		kbox->f[0] += (float)(x1 - HELP_W) * kbox->f[2] * (SC_COEF - 1);
+		kbox->f[1] -= (float)x2 * kbox->f[2] * (SC_COEF - 1);
+	printf("1/sc = %d n = %d\n", (int)(1 / kbox->f[2]), 
+			(int)(50.0 * pow(0.004 / kbox->f[2], 0.9)));
+	reprint_all(kbox, qbox, ibox);
+	}
 	return (0);
 }
 
@@ -47,8 +82,6 @@ int	main(int argc, char **argv)
 	t_imgbox	ibox;
 	t_quebox	qbox;
 	t_kernbox	kbox;
-//	size_t		items;
-	float		param[3];
 
 	if (argc != 2 || ft_strcmp(argv[1], MAND))
 		clean_all(NULL, NULL, USAGE);
@@ -59,36 +92,15 @@ int	main(int argc, char **argv)
 	if (!(ibox.img = mlx_new_image(ibox.mlx, IMG_SIZE, IMG_SIZE)))
 		clean_all(NULL, NULL, ER_IMG);
 	init_queue(&qbox);
-//	kbox.kern = clCreateKernel(qbox.prog, argv[1], &ret);
-//	if (ret)
-//		clean_all(&kbox, &qbox, "cant create kernel\n");
-//	kbox.map = (int *)ft_memalloc(MAP_LEN * sizeof(int));
-//	kbox.map_buf = clCreateBuffer(qbox.ctx, CL_MEM_READ_WRITE | 
-//			CL_MEM_COPY_HOST_PTR, MAP_LEN * sizeof(int), kbox.map, &ret);
-//	if (ret)
-//		clean_all(kbox, qbox, "cant create buffer\n");
 	init_kern(&kbox, argv[1], &qbox);
-	param[0] = -2.0;
-	param[1] = 1.0;
-	param[2] = 0.002;
-	evolve_kern(&kbox, &qbox, param);
-//	items = MAP_LEN;
-//	if (clEnqueueNDRangeKernel(qbox.queue, kbox.kern, 1, NULL, 
-//			&items, NULL, 0, NULL, NULL))
-//		clean_all(&kbox, &qbox, "cant enqueue the kernel\n");
-//	clFinish(qbox.queue);
-//	printf("finish!!!\n");
-//	if (clEnqueueReadBuffer(qbox.queue, kbox.map_buf, CL_TRUE, 0,
-//			MAP_LEN, kbox.map, 0, NULL, NULL))
-//		clean_all(&kbox, &qbox, "cant read from buffer\n");
-	paint_it(kbox.map, &ibox);
-	//	create_map(&ibox);
+	kbox.f[0] = MAND_START_X;
+	kbox.f[1] = MAND_START_Y;
+	kbox.f[2] = MAND_START_SC;
 	//	print_instructions(ibox.mlx, ibox.wnd);
-	//	reprint_map(&ibox);
-//	param = ft_memalloc(3 * sizeof(void));
-//	param = (void *[3]){(void *)&ibox, (void *)&qbox, (void *)&kbox};
-	mlx_hook(ibox.wnd, 2, 0, keyboard, &ibox);
-	//	mlx_hook(ibox.wnd, 4, 1, mouse, &ibox);
+	reprint_all(&kbox, &qbox, &ibox);
+	mlx_hook(ibox.wnd, 2, 0, keyboard, (int *[]){(int *)&kbox, (int *)&qbox});
+	mlx_hook(ibox.wnd, 4, 1, mouse, 
+		(int *[]){(int *)&kbox, (int *)&qbox, (int *)&ibox});
 	mlx_loop(ibox.mlx);
 	return (0);
 }
