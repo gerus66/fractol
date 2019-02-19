@@ -6,7 +6,7 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/16 20:42:37 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/18 16:50:45 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/19 22:18:29 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,18 +61,51 @@ void	init_queue(t_quebox *qbox)
 	init_prog(qbox, PROGRAM_FILE);
 }
 
-void	init_kern(t_kernbox *kbox, char *kern_name, t_quebox *qbox)
+void	init_kern(t_kernbox *kbox, char *kern_name, t_quebox *qbox, t_imgbox *ibox)
 {
 	int		ret;
+	int		bits;
 
 	kbox->kern = clCreateKernel(qbox->prog, kern_name, &ret);
 	if (ret)
 		clean_all(kbox, qbox, "cant create kernel\n");
-	kbox->map = (int *)ft_memalloc(MAP_LEN * sizeof(int));
+	kbox->map = (int *)mlx_get_data_addr(ibox->img, &bits, &ret, &ret);
 	kbox->map_buf = clCreateBuffer(qbox->ctx, CL_MEM_READ_WRITE |
 		CL_MEM_COPY_HOST_PTR, MAP_LEN * sizeof(int), kbox->map, &ret);
 	if (ret)
 		clean_all(kbox, qbox, "cant create buffer\n");
+//	cl_uint a;
+//	clGetKernelInfo(kbox->kern, CL_KERNEL_NUM_ARGS, 4, &a, NULL);
+//	printf("kern args: %d\n", a);
 	if (clSetKernelArg(kbox->kern, 0, sizeof(cl_mem), &(kbox->map_buf)))
 		clean_all(kbox, qbox, "cant set arguments for kernel\n");
+}
+
+void	reprint_all(t_kernbox *kbox, t_quebox *qbox, t_imgbox *ibox)
+{
+	int		ret;
+	size_t	items;
+
+	kbox->f_buf = clCreateBuffer(qbox->ctx, CL_MEM_READ_WRITE |
+			CL_MEM_COPY_HOST_PTR, 4 * sizeof(double), kbox->f, &ret);
+	if (ret)
+		clean_all(kbox, qbox, "cant create buffer\n");
+	if (clSetKernelArg(kbox->kern, 1, sizeof(cl_mem), &(kbox->f_buf)))
+		clean_all(kbox, qbox, "cant set arguments for kernel\n");
+	items = MAP_LEN;
+	if (clEnqueueNDRangeKernel(qbox->queue, kbox->kern, 1, NULL,
+				&items, NULL, 0, NULL, NULL))
+		clean_all(kbox, qbox, "cant enqueue the kernel\n");
+	if (clEnqueueReadBuffer(qbox->queue, kbox->map_buf, CL_TRUE, 0,
+				MAP_LEN * sizeof(int), kbox->map, 0, NULL, NULL))
+		clean_all(kbox, qbox, "cant read from buffer\n");
+	clReleaseMemObject(kbox->f_buf);
+	mlx_put_image_to_window(ibox->mlx, ibox->wnd, ibox->img, WND_W - IMG_SIZE,
+			WND_H - IMG_SIZE);
+	mlx_put_image_to_window(ibox->mlx, ibox->wnd, ibox->eraser, 0, 0);
+	print_menu(ibox->mlx, ibox->wnd);
+	mlx_string_put(ibox->mlx, ibox->wnd, 150, 20, HELP_COLOR, 
+			ft_itoa((ssize_t)(1 / kbox->f[2])));
+	mlx_string_put(ibox->mlx, ibox->wnd, 150, 50, HELP_COLOR, 
+			ft_itoa(kbox->f[3]));
 }
