@@ -6,7 +6,7 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/16 15:47:17 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/19 16:44:32 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/19 21:30:57 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,30 +51,37 @@ static int	mouse(int key, int x1, int x2, void *param)
 	t_kernbox	*kbox;
 	t_quebox	*qbox;
 	t_imgbox	*ibox;
-	float		tmp;
 
 	kbox = (t_kernbox *)(((int **)param)[0]);
 	qbox = (t_quebox *)(((int **)param)[1]);
 	ibox = (t_imgbox *)(((int **)param)[2]);
 	if (key == 5)
 	{
-	//	tmp = kbox->f[2];
-		kbox->f[0] += (float)(x1 - HELP_W) * kbox->f[2] * (1 - SC_COEF);
-		kbox->f[1] -= (float)x2 * kbox->f[2] * (1 - SC_COEF);
+		kbox->f[0] += (double)(x1 - HELP_W) * kbox->f[2] * (1 - SC_COEF);
+		kbox->f[1] -= (double)x2 * kbox->f[2] * (1 - SC_COEF);
 		kbox->f[2] *= SC_COEF;
-	reprint_all(kbox, qbox, ibox);
+		kbox->f[3] = 60.0 * pow(0.004 / kbox->f[2], 0.9);
+		if (kbox->f[3] > MAX_DEPTH)
+			kbox->f[3] = (double)MAX_DEPTH;
+		reprint_all(kbox, qbox, ibox);
 	}
 	else if (key == 4)
 	{
-		tmp = kbox->f[2];
 		kbox->f[2] /= SC_COEF;
-		kbox->f[0] += (float)(x1 - HELP_W) * kbox->f[2] * (SC_COEF - 1);
-		kbox->f[1] -= (float)x2 * kbox->f[2] * (SC_COEF - 1);
-	printf("1/sc = %d n = %d\n", (int)(1 / kbox->f[2]), 
-			(int)(50.0 * pow(0.004 / kbox->f[2], 0.9)));
-	reprint_all(kbox, qbox, ibox);
+		kbox->f[0] += (double)(x1 - HELP_W) * kbox->f[2] * (SC_COEF - 1);
+		kbox->f[1] -= (double)x2 * kbox->f[2] * (SC_COEF - 1);
+		kbox->f[3] = 60.0 * pow(0.004 / kbox->f[2], 0.9);
+		if (kbox->f[3] > MAX_DEPTH)
+			kbox->f[3] = (float)MAX_DEPTH;
+		reprint_all(kbox, qbox, ibox);
 	}
 	return (0);
+}
+
+void	print_menu(void *mlx, void *wnd)
+{
+	mlx_string_put(mlx, wnd, 20, 20, HELP_COLOR, "scale (px):");
+	mlx_string_put(mlx, wnd, 20, 50, HELP_COLOR, "depth:");
 }
 
 int	main(int argc, char **argv)
@@ -91,12 +98,16 @@ int	main(int argc, char **argv)
 		clean_all(NULL, NULL, ER_WND);
 	if (!(ibox.img = mlx_new_image(ibox.mlx, IMG_SIZE, IMG_SIZE)))
 		clean_all(NULL, NULL, ER_IMG);
+	if (!(ibox.eraser = mlx_new_image(ibox.mlx, HELP_W, WND_H)))
+		clean_all(NULL, NULL, ER_IMG);
 	init_queue(&qbox);
-	init_kern(&kbox, argv[1], &qbox);
+//	kbox.map = mlx_get_data_addr(ibox.img, &bits, &s_line, &endian);
+	init_kern(&kbox, argv[1], &qbox, &ibox);
 	kbox.f[0] = MAND_START_X;
 	kbox.f[1] = MAND_START_Y;
 	kbox.f[2] = MAND_START_SC;
-	//	print_instructions(ibox.mlx, ibox.wnd);
+	kbox.f[3] = 60 * pow(0.004 / kbox.f[2], 0.9);
+	print_menu(ibox.mlx, ibox.wnd);
 	reprint_all(&kbox, &qbox, &ibox);
 	mlx_hook(ibox.wnd, 2, 0, keyboard, (int *[]){(int *)&kbox, (int *)&qbox});
 	mlx_hook(ibox.wnd, 4, 1, mouse, 
