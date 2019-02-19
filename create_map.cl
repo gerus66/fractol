@@ -17,8 +17,9 @@ kernel void	mandelbrot(global int *map, global float3 *p)
 	
 	index = get_global_id(0);
 	sc = p[0].s2;
-	n = 100000;
+	n = 60.0 * powr(0.004 / sc, 0.9);
 	first = (float2)(p[0].s0, p[0].s1);
+//	printf("[%.2f, %.2f] ", first.x, first.y);
 	c = (float2)(first.x + (index % 1000) * sc, first.y - (index / 1000) * sc);
 	f = (float2)(0, 0);
 	i = -1;
