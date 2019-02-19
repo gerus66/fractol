@@ -6,7 +6,7 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/16 15:41:06 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/18 14:17:18 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/18 18:12:04 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ static void		put_pixel_to_img(void *img, int x, int y, int color)
 	}
 }
 
-#define N_VAL 50000
+#define N_VAL 100
 
 static int	m_color(void *mlx, int n)
 {
@@ -65,20 +65,31 @@ static int	m_color(void *mlx, int n)
 	return (mlx_get_color_value(mlx, color.cl));
 }
 
-//#include <stdio.h>
-void	paint_it(int *map, t_imgbox *ibox)
+void	reprint_all(t_kernbox *kbox, t_quebox *qbox, t_imgbox *ibox)
 {
-	int	i;
+	int		ret;
+	size_t	items;
+	int		i;
 
+	kbox->f_buf = clCreateBuffer(qbox->ctx, CL_MEM_READ_WRITE |
+			CL_MEM_COPY_HOST_PTR, 3 * sizeof(float), kbox->f, &ret);
+	if (ret)
+		clean_all(kbox, qbox, "cant create buffer\n");
+	if (clSetKernelArg(kbox->kern, 1, sizeof(cl_mem), &(kbox->f_buf)))
+		clean_all(kbox, qbox, "cant set arguments for kernel\n");
+	items = MAP_LEN;
+	if (clEnqueueNDRangeKernel(qbox->queue, kbox->kern, 1, NULL,
+				&items, NULL, 0, NULL, NULL))
+		clean_all(kbox, qbox, "cant enqueue the kernel\n");
+//	clFinish(qbox->queue);
+	if (clEnqueueReadBuffer(qbox->queue, kbox->map_buf, CL_TRUE, 0,
+				MAP_LEN * sizeof(int), kbox->map, 0, NULL, NULL))
+		clean_all(kbox, qbox, "cant read from buffer\n");
+	clReleaseMemObject(kbox->f_buf);
 	i = -1;
-	while (++i < IMG_SIZE * IMG_SIZE)
-	{
-	//	if (map[i])
-	//		printf("%d ", i);
-		put_pixel_to_img(ibox->img, i % IMG_SIZE, i / IMG_SIZE, 
-			m_color(ibox->mlx, map[i]));
-	//		mlx_get_color_value(ibox->mlx, map[i] ? COLOR_IN : COLOR_OUT));
-	}
-	mlx_put_image_to_window(ibox->mlx, ibox->wnd, ibox->img, WND_W - IMG_SIZE, 
+	while (++i < MAP_LEN)
+		put_pixel_to_img(ibox->img, i % IMG_SIZE, i / IMG_SIZE,
+				m_color(ibox->mlx, kbox->map[i]));
+	mlx_put_image_to_window(ibox->mlx, ibox->wnd, ibox->img, WND_W - IMG_SIZE,
 			WND_H - IMG_SIZE);
 }
