@@ -6,7 +6,7 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/20 12:14:01 by mbartole          #+#    #+#             */
-/*   Updated: 2019/01/26 13:54:11 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/19 21:13:04 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ char			*ft_strtrim(char const *s);
 char			*ft_strcat(char *s1, const char *s2);
 char			*ft_strncat(char *s1, const char *s2, size_t n);
 char			*ft_strnew(size_t size);
-char			*ft_itoa(int n);
+char			*ft_itoa(ssize_t n);
 char			*ft_strjoin(char const *s1, char const *s2);
 char			*ft_strsub(char const *s, unsigned int start, size_t len);
 char			*ft_strcpy(char *dst, const char *src);

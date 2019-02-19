@@ -6,13 +6,13 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/20 13:38:34 by mbartole          #+#    #+#             */
-/*   Updated: 2018/11/20 18:09:43 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/19 21:11:37 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-static int	ilen(long n)
+static int	ilen(ssize_t n)
 {
 	if (n < 0)
 		return (1 + ilen(-n));
@@ -21,9 +21,9 @@ static int	ilen(long n)
 	return (1);
 }
 
-char		*ft_itoa(int n)
+char		*ft_itoa(ssize_t n)
 {
-	long	nb;
+	ssize_t	nb;
 	char	*tmp;
 	int		len;
 	int		i;
