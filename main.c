@@ -6,7 +6,7 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/16 15:47:17 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/19 21:30:57 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/19 23:26:19 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,15 +36,41 @@ void	clean_all(t_kernbox *kbox, t_quebox *qbox, char *msg)
 
 static int	keyboard(int key, void *param)
 {
+	t_kernbox	*kbox;
+	t_quebox	*qbox;
+	t_imgbox	*ibox;
+
+	kbox = (t_kernbox *)(((int **)param)[0]);
+	qbox = (t_quebox *)(((int **)param)[1]);
+	ibox = (t_imgbox *)(((int **)param)[2]);
 	if (key == 53)
-		clean_all((t_kernbox *)(((int **)param)[0]),
-			(t_quebox *)(((int **)param)[1]), NULL);
+		clean_all(kbox, qbox, NULL);
+	else if (key == 123)
+	{
+		kbox->f[0] += kbox->f[2] * MOVE_PX;
+		reprint_all(kbox, qbox, ibox);
+	}
+	else if (key == 124)
+	{
+		kbox->f[0] -= kbox->f[2] * MOVE_PX;
+		reprint_all(kbox, qbox, ibox);
+	}
+	else if (key == 125)
+	{
+		kbox->f[1] += kbox->f[2] * MOVE_PX;
+		reprint_all(kbox, qbox, ibox);
+	}
+	else if (key == 126)
+	{
+		kbox->f[1] -= kbox->f[2] * MOVE_PX;
+		reprint_all(kbox, qbox, ibox);
+	}
 	return (0);
 }
 
 /*
-** handle mouse events
-*/
+ ** handle mouse events
+ */
 
 static int	mouse(int key, int x1, int x2, void *param)
 {
@@ -80,8 +106,12 @@ static int	mouse(int key, int x1, int x2, void *param)
 
 void	print_menu(void *mlx, void *wnd)
 {
-	mlx_string_put(mlx, wnd, 20, 20, HELP_COLOR, "scale (px):");
-	mlx_string_put(mlx, wnd, 20, 50, HELP_COLOR, "depth:");
+	mlx_string_put(mlx, wnd, 20, 20, HELP_COLOR, "move by arrows");
+	mlx_string_put(mlx, wnd, 20, 120, HELP_COLOR, "scale by mouse wheel");
+	mlx_string_put(mlx, wnd, 20, 150, HELP_COLOR, "scale (px):");
+	mlx_string_put(mlx, wnd, 20, 220, HELP_COLOR, "depth's limit:");
+	mlx_string_put(mlx, wnd, 200, 220, HELP_COLOR, ft_itoa(MAX_DEPTH));
+	mlx_string_put(mlx, wnd, 20, 250, HELP_COLOR, "depth:");
 }
 
 int	main(int argc, char **argv)
@@ -101,7 +131,7 @@ int	main(int argc, char **argv)
 	if (!(ibox.eraser = mlx_new_image(ibox.mlx, HELP_W, WND_H)))
 		clean_all(NULL, NULL, ER_IMG);
 	init_queue(&qbox);
-//	kbox.map = mlx_get_data_addr(ibox.img, &bits, &s_line, &endian);
+	//	kbox.map = mlx_get_data_addr(ibox.img, &bits, &s_line, &endian);
 	init_kern(&kbox, argv[1], &qbox, &ibox);
 	kbox.f[0] = MAND_START_X;
 	kbox.f[1] = MAND_START_Y;
@@ -109,9 +139,10 @@ int	main(int argc, char **argv)
 	kbox.f[3] = 60 * pow(0.004 / kbox.f[2], 0.9);
 	print_menu(ibox.mlx, ibox.wnd);
 	reprint_all(&kbox, &qbox, &ibox);
-	mlx_hook(ibox.wnd, 2, 0, keyboard, (int *[]){(int *)&kbox, (int *)&qbox});
+	mlx_hook(ibox.wnd, 2, 0, keyboard, 
+			(int *[]){(int *)&kbox, (int *)&qbox, (int *)&ibox});
 	mlx_hook(ibox.wnd, 4, 1, mouse, 
-		(int *[]){(int *)&kbox, (int *)&qbox, (int *)&ibox});
+			(int *[]){(int *)&kbox, (int *)&qbox, (int *)&ibox});
 	mlx_loop(ibox.mlx);
 	return (0);
 }
