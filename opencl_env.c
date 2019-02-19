@@ -6,13 +6,13 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/16 20:42:37 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/18 14:42:01 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/18 16:50:45 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fractol.h"
 
-static void	init_prog(t_quebox *qbox, char *filename)
+static void	init_prog(t_quebox *qbox, char *filename)//TODO
 {
 	FILE *program_handle;
 	char *program_buffer;
@@ -75,26 +75,4 @@ void	init_kern(t_kernbox *kbox, char *kern_name, t_quebox *qbox)
 		clean_all(kbox, qbox, "cant create buffer\n");
 	if (clSetKernelArg(kbox->kern, 0, sizeof(cl_mem), &(kbox->map_buf)))
 		clean_all(kbox, qbox, "cant set arguments for kernel\n");
-}
-
-void	evolve_kern(t_kernbox *kbox, t_quebox *qbox, float *param)
-{
-	int		ret;
-	size_t	items;
-
-	kbox->f_buf = clCreateBuffer(qbox->ctx, CL_MEM_READ_WRITE |
-		CL_MEM_COPY_HOST_PTR, 3 * sizeof(float), param, &ret);
-	if (ret)
-		clean_all(kbox, qbox, "cant create buffer\n");
-	if (clSetKernelArg(kbox->kern, 1, sizeof(cl_mem), &(kbox->f_buf)))
-		clean_all(kbox, qbox, "cant set arguments for kernel\n");
-	items = MAP_LEN;
-	if (clEnqueueNDRangeKernel(qbox->queue, kbox->kern, 1, NULL,
-			&items, NULL, 0, NULL, NULL))
-			clean_all(kbox, qbox, "cant enqueue the kernel\n");
-		clFinish(qbox->queue);
-	if (clEnqueueReadBuffer(qbox->queue, kbox->map_buf, CL_TRUE, 0,
-			MAP_LEN, kbox->map, 0, NULL, NULL))
-		clean_all(kbox, qbox, "cant read from buffer\n");
-//	paint_it(kbox->map, ibox);
 }
