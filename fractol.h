@@ -6,7 +6,7 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 15:55:54 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/19 15:20:07 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/19 21:30:02 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,18 +20,19 @@
 
 #include <stdio.h>
 
-typedef union	u_color
+/*typedef union	u_color
 {
 	int				cl;
 	unsigned char	cl4[4];
 }				t_color;
-
+*/
 
 typedef struct	s_imgbox
 {
 	void		*mlx;
 	void		*wnd;
 	void		*img;
+	void		*eraser;
 	//	double		rot[16];
 	//	double		mov[16];
 	//	double		scl[16];
@@ -51,17 +52,19 @@ typedef struct	s_kernbox
 	cl_kernel			kern;
 	int					*map;
 	cl_mem				map_buf;
-	float				f[3];
+	double				f[4];
 	cl_mem				f_buf;
 }				t_kernbox;
 
 # define IMG_SIZE 1000
 # define MAP_LEN 1000000
-# define WND_W 1300
+# define WND_W 1400
 # define WND_H 1000
-# define HELP_W 300
+# define HELP_W 400
+# define HELP_COLOR 0x00FF9100
 
-# define SC_COEF 2
+# define SC_COEF 1.2
+# define MAX_DEPTH 10000
 
 # define PROGRAM_FILE "create_map.cl"
 
@@ -77,9 +80,10 @@ typedef struct	s_kernbox
 # define USAGE "Usage will be here\n"
 
 void			init_queue(t_quebox *qbox);
-void			init_kern(t_kernbox *kbox, char *kern_name, t_quebox *qbox);
+void			init_kern(t_kernbox *kbox, char *kern_name, t_quebox *qbox, t_imgbox *ibox);
 void			evolve_kern(t_kernbox *kbox, t_quebox *qbox);
 void			clean_all(t_kernbox *kbox, t_quebox *qbox, char *msg);
 void			reprint_all(t_kernbox *kbox, t_quebox *qbox, t_imgbox *ibox);
+void			print_menu(void *mlx, void *wnd);
 
 #endif
