@@ -6,7 +6,7 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 15:55:54 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/19 21:30:02 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/19 23:09:15 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,7 @@ typedef struct	s_kernbox
 # define HELP_COLOR 0x00FF9100
 
 # define SC_COEF 1.2
+# define MOVE_PX 50;
 # define MAX_DEPTH 10000
 
 # define PROGRAM_FILE "create_map.cl"
