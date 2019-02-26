@@ -6,7 +6,7 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/16 15:47:17 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/26 09:43:30 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/27 00:46:51 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,20 @@ static void	init_ship(t_kernbox *kbox, t_quebox *qbox, t_imgbox *ibox)
 	mlx_string_put(ibox->mlx, ibox->wnd, 20, 20, HELP_COLOR, "Mandelbrot");
 	mlx_string_put(ibox->mlx, ibox->wnd, 20, 50, HELP_COLOR, "Julia");
 	mlx_string_put(ibox->mlx, ibox->wnd, 20, 80, CUR_COLOR, "Burning ship");
+}
+
+static int	close_on_cross(void *param)
+{
+	t_kernbox	*kbox;
+	t_quebox	*qbox;
+	t_imgbox	*ibox;
+
+//	printf("key %d\n", key);
+	kbox = (t_kernbox *)(((int **)param)[0]);
+	qbox = (t_quebox *)(((int **)param)[1]);
+	ibox = (t_imgbox *)(((int **)param)[2]);
+	clean_all(kbox, qbox, NULL);
+	return (0);
 }
 
 /*
@@ -267,6 +281,8 @@ int	main(int argc, char **argv)
 	init_mand(&kbox, &qbox, &ibox);
 	reprint_all(&kbox, &qbox, &ibox);
 	mlx_hook(ibox.wnd, 2, 0, keyboard, 
+			(int *[]){(int *)&kbox, (int *)&qbox, (int *)&ibox});
+	mlx_hook(ibox.wnd, 17, 0, close_on_cross, 
 			(int *[]){(int *)&kbox, (int *)&qbox, (int *)&ibox});
 	mlx_hook(ibox.wnd, 4, 1, click_mouse, 
 			(int *[]){(int *)&kbox, (int *)&qbox, (int *)&ibox});
