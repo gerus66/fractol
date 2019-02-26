@@ -6,7 +6,7 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/16 15:47:17 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/19 23:26:19 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/26 05:44:04 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,48 +45,46 @@ static int	keyboard(int key, void *param)
 	ibox = (t_imgbox *)(((int **)param)[2]);
 	if (key == 53)
 		clean_all(kbox, qbox, NULL);
-	else if (key == 123)
-	{
-		kbox->f[0] += kbox->f[2] * MOVE_PX;
-		reprint_all(kbox, qbox, ibox);
-	}
-	else if (key == 124)
-	{
-		kbox->f[0] -= kbox->f[2] * MOVE_PX;
-		reprint_all(kbox, qbox, ibox);
-	}
-	else if (key == 125)
-	{
-		kbox->f[1] += kbox->f[2] * MOVE_PX;
-		reprint_all(kbox, qbox, ibox);
-	}
-	else if (key == 126)
-	{
-		kbox->f[1] -= kbox->f[2] * MOVE_PX;
-		reprint_all(kbox, qbox, ibox);
-	}
 	return (0);
+}
+
+static double depth(float sc)
+{
+	sc = 1 / sc;
+//	return (sqrt(sc) * log10(sqrt(sc - 100)) + 100);
+//	return (sqrt(sc / 10.0 + 1000000000.0) / 100);
+	if (sc < 250)
+		sc = 250;
+	return (1000.0 * log10(sc - 248.0));
+//	return (200.0 * log((sc - 250.0) / 100.0 + 2.0));
 }
 
 /*
  ** handle mouse events
  */
 
-static int	mouse(int key, int x1, int x2, void *param)
+static int	click_mouse(int key, int x1, int x2, void *param)
 {
 	t_kernbox	*kbox;
 	t_quebox	*qbox;
 	t_imgbox	*ibox;
 
+	printf("click %d  [%d, %d]\n", key, x1, x2);
 	kbox = (t_kernbox *)(((int **)param)[0]);
 	qbox = (t_quebox *)(((int **)param)[1]);
 	ibox = (t_imgbox *)(((int **)param)[2]);
-	if (key == 5)
+	if (key == 1 && x2 > 0)
+	{
+		ibox->mouse_left = 1;
+		ibox->mouse_pos[0] = x1;
+		ibox->mouse_pos[1] = x2;
+	}
+	else if (key == 5)
 	{
 		kbox->f[0] += (double)(x1 - HELP_W) * kbox->f[2] * (1 - SC_COEF);
 		kbox->f[1] -= (double)x2 * kbox->f[2] * (1 - SC_COEF);
 		kbox->f[2] *= SC_COEF;
-		kbox->f[3] = 60.0 * pow(0.004 / kbox->f[2], 0.9);
+		kbox->f[3] = depth(kbox->f[2]);
 		if (kbox->f[3] > MAX_DEPTH)
 			kbox->f[3] = (double)MAX_DEPTH;
 		reprint_all(kbox, qbox, ibox);
@@ -96,11 +94,46 @@ static int	mouse(int key, int x1, int x2, void *param)
 		kbox->f[2] /= SC_COEF;
 		kbox->f[0] += (double)(x1 - HELP_W) * kbox->f[2] * (SC_COEF - 1);
 		kbox->f[1] -= (double)x2 * kbox->f[2] * (SC_COEF - 1);
-		kbox->f[3] = 60.0 * pow(0.004 / kbox->f[2], 0.9);
+		kbox->f[3] = depth(kbox->f[2]);
 		if (kbox->f[3] > MAX_DEPTH)
 			kbox->f[3] = (float)MAX_DEPTH;
 		reprint_all(kbox, qbox, ibox);
 	}
+	return (0);
+}
+
+static int	release_mouse(int key, int x1, int x2, void *param)
+{
+	t_kernbox	*kbox;
+	t_quebox	*qbox;
+	t_imgbox	*ibox;
+
+	kbox = (t_kernbox *)(((int **)param)[0]);
+	qbox = (t_quebox *)(((int **)param)[1]);
+	ibox = (t_imgbox *)(((int **)param)[2]);
+	ibox->mouse_left = 0;
+	printf("release %d  [%d, %d]\n", key, x1, x2);
+	return (0);
+}
+
+static int	move_mouse(int x1, int x2, void *param)
+{
+	t_kernbox	*kbox;
+	t_quebox	*qbox;
+	t_imgbox	*ibox;
+
+	kbox = (t_kernbox *)(((int **)param)[0]);
+	qbox = (t_quebox *)(((int **)param)[1]);
+	ibox = (t_imgbox *)(((int **)param)[2]);
+	if (ibox->mouse_left)
+	{
+		kbox->f[0] -= kbox->f[2] * (x1 - ibox->mouse_pos[0]);
+		kbox->f[1] += kbox->f[2] * (x2 - ibox->mouse_pos[1]);
+		ibox->mouse_pos[0] = x1;
+		ibox->mouse_pos[1] = x2;
+		reprint_all(kbox, qbox, ibox);
+	}
+	printf("move [%d, %d]\n", x1, x2);
 	return (0);
 }
 
@@ -130,18 +163,22 @@ int	main(int argc, char **argv)
 		clean_all(NULL, NULL, ER_IMG);
 	if (!(ibox.eraser = mlx_new_image(ibox.mlx, HELP_W, WND_H)))
 		clean_all(NULL, NULL, ER_IMG);
+	ibox.mouse_left = 0;
 	init_queue(&qbox);
-	//	kbox.map = mlx_get_data_addr(ibox.img, &bits, &s_line, &endian);
 	init_kern(&kbox, argv[1], &qbox, &ibox);
 	kbox.f[0] = MAND_START_X;
 	kbox.f[1] = MAND_START_Y;
 	kbox.f[2] = MAND_START_SC;
-	kbox.f[3] = 60 * pow(0.004 / kbox.f[2], 0.9);
+	kbox.f[3] = depth(kbox.f[2]);
 	print_menu(ibox.mlx, ibox.wnd);
 	reprint_all(&kbox, &qbox, &ibox);
 	mlx_hook(ibox.wnd, 2, 0, keyboard, 
 			(int *[]){(int *)&kbox, (int *)&qbox, (int *)&ibox});
-	mlx_hook(ibox.wnd, 4, 1, mouse, 
+	mlx_hook(ibox.wnd, 4, 1, click_mouse, 
+			(int *[]){(int *)&kbox, (int *)&qbox, (int *)&ibox});
+	mlx_hook(ibox.wnd, 5, 1, release_mouse, 
+			(int *[]){(int *)&kbox, (int *)&qbox, (int *)&ibox});
+	mlx_hook(ibox.wnd, 6, 1, move_mouse, 
 			(int *[]){(int *)&kbox, (int *)&qbox, (int *)&ibox});
 	mlx_loop(ibox.mlx);
 	return (0);
