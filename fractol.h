@@ -6,7 +6,7 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 15:55:54 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/19 23:09:15 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/26 09:18:45 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,9 @@ typedef struct	s_imgbox
 	void		*wnd;
 	void		*img;
 	void		*eraser;
+	char		mouse_left;
+	char		mouse_right;
+	int			mouse_pos[2];
 	//	double		rot[16];
 	//	double		mov[16];
 	//	double		scl[16];
@@ -52,8 +55,10 @@ typedef struct	s_kernbox
 	cl_kernel			kern;
 	int					*map;
 	cl_mem				map_buf;
-	double				f[4];
+	double				f[5];
 	cl_mem				f_buf;
+	int					i[2];
+	cl_mem				i_buf;
 }				t_kernbox;
 
 # define IMG_SIZE 1000
@@ -61,11 +66,13 @@ typedef struct	s_kernbox
 # define WND_W 1400
 # define WND_H 1000
 # define HELP_W 400
+# define STR_H 30
 # define HELP_COLOR 0x00FF9100
+# define CUR_COLOR 0x0043E8B1
 
 # define SC_COEF 1.2
 # define MOVE_PX 50;
-# define MAX_DEPTH 10000
+# define MAX_DEPTH 200000
 
 # define PROGRAM_FILE "create_map.cl"
 
@@ -73,6 +80,12 @@ typedef struct	s_kernbox
 # define MAND_START_X -2.0
 # define MAND_START_Y 2.0
 # define MAND_START_SC 0.004
+
+# define JUL "julia"
+# define JUL_START_X 0.0
+# define JUL_START_Y 0.0
+
+# define SHIP "ship"
 
 # define ER_MAL "cant malloc it!\n"
 # define ER_MLX "cannot initialize mlx\n"

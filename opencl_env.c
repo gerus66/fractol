@@ -6,7 +6,7 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/16 20:42:37 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/19 23:26:40 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/26 08:38:51 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,10 +87,16 @@ void	reprint_all(t_kernbox *kbox, t_quebox *qbox, t_imgbox *ibox)
 	size_t	items;
 
 	kbox->f_buf = clCreateBuffer(qbox->ctx, CL_MEM_READ_WRITE |
-			CL_MEM_COPY_HOST_PTR, 4 * sizeof(double), kbox->f, &ret);
+			CL_MEM_COPY_HOST_PTR, 5 * sizeof(double), kbox->f, &ret);
+	if (ret)
+		clean_all(kbox, qbox, "cant create buffer\n");
+	kbox->i_buf = clCreateBuffer(qbox->ctx, CL_MEM_READ_WRITE |
+			CL_MEM_COPY_HOST_PTR, 2 * sizeof(int), kbox->i, &ret);
 	if (ret)
 		clean_all(kbox, qbox, "cant create buffer\n");
 	if (clSetKernelArg(kbox->kern, 1, sizeof(cl_mem), &(kbox->f_buf)))
+		clean_all(kbox, qbox, "cant set arguments for kernel\n");
+	if (clSetKernelArg(kbox->kern, 2, sizeof(cl_mem), &(kbox->i_buf)))
 		clean_all(kbox, qbox, "cant set arguments for kernel\n");
 	items = MAP_LEN;
 	if (clEnqueueNDRangeKernel(qbox->queue, kbox->kern, 1, NULL,
@@ -100,12 +106,12 @@ void	reprint_all(t_kernbox *kbox, t_quebox *qbox, t_imgbox *ibox)
 				MAP_LEN * sizeof(int), kbox->map, 0, NULL, NULL))
 		clean_all(kbox, qbox, "cant read from buffer\n");
 	clReleaseMemObject(kbox->f_buf);
+	mlx_put_image_to_window(ibox->mlx, ibox->wnd, ibox->eraser, 150, 250);
+	mlx_string_put(ibox->mlx, ibox->wnd, 150, 250, HELP_COLOR, 
+			ft_itoa((ssize_t)(1 / kbox->f[2])));
+	mlx_put_image_to_window(ibox->mlx, ibox->wnd, ibox->eraser, 200, 350);
+	mlx_string_put(ibox->mlx, ibox->wnd, 200, 350, HELP_COLOR, 
+			ft_itoa(kbox->i[0]));
 	mlx_put_image_to_window(ibox->mlx, ibox->wnd, ibox->img, WND_W - IMG_SIZE,
 			WND_H - IMG_SIZE);
-	mlx_put_image_to_window(ibox->mlx, ibox->wnd, ibox->eraser, 0, 0);
-	print_menu(ibox->mlx, ibox->wnd);
-	mlx_string_put(ibox->mlx, ibox->wnd, 150, 150, HELP_COLOR, 
-			ft_itoa((ssize_t)(1 / kbox->f[2])));
-	mlx_string_put(ibox->mlx, ibox->wnd, 200, 250, HELP_COLOR, 
-			ft_itoa(kbox->f[3]));
 }
