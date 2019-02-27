@@ -6,112 +6,111 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/16 20:42:37 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/26 08:38:51 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/02/27 07:12:56 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fractol.h"
 
-static void	init_prog(t_quebox *qbox, char *filename)//TODO
+static char	*program_buffer(char *name)
 {
-	FILE *program_handle;
-	char *program_buffer;
-	size_t program_size;
-	int ret;
+	int		fd;
+	char	*buf;
+	int		r;
+	size_t	l;
 
-	program_handle = fopen(filename, "r");
-	fseek(program_handle, 0, SEEK_END);
-	program_size = ftell(program_handle);
-	rewind(program_handle);
-	program_buffer = (char*)malloc(program_size + 1);
-	program_buffer[program_size] = '\0';
-	fread(program_buffer, sizeof(char), program_size, program_handle);
-	fclose(program_handle);
-	qbox->prog = clCreateProgramWithSource(qbox->ctx, 1, 
-			(const char **)&program_buffer, &program_size, &ret);
-	free(program_buffer);
-	if(ret)
-   		clean_all(NULL, qbox, "cant create program from file\n");
+	if ((fd = open(name, O_RDONLY)) == -1)
+		clean_all(NULL, NULL, "cant open program file\n");
+	l = 0;
+	while ((r = get_next_line(fd, &buf)))
+	{
+		if (r == -1)
+			clean_all(NULL, NULL, "cant read from program file\n");
+		l += ft_strlen(buf) + 1;
+		free(buf);
+	}
+	close(fd);
+	if (!(buf = (char*)malloc(l + 1)))
+		clean_all(NULL, NULL, ER_MALLOC);
+	if ((fd = open(name, O_RDONLY)) == -1 || (read(fd, buf, l)) == -1)
+		clean_all(NULL, NULL, "cant read from program file\n");
+	buf[l] = '\0';
+	close(fd);
+	return (buf);
+}
+
+static void	cook_program(t_quebox *qbox, cl_device_id *dev, char *buf)
+{
+	size_t	len;
+	int		ret;
+
+	len = ft_strlen(buf);
+	qbox->prog = clCreateProgramWithSource(qbox->ctx, 1,
+			(const char **)&buf, &len, &ret);
+	free(buf);
+	if (ret)
+	{
+		clReleaseContext(qbox->ctx);
+		clReleaseCommandQueue(qbox->queue);
+		clean_all(NULL, NULL, "cant create program from file\n");
+	}
 	if ((ret = clBuildProgram(qbox->prog, 0, NULL, NULL, NULL, NULL)))
 	{
-		size_t	log_size;
-		clGetProgramBuildInfo(qbox->prog, qbox->dev, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
-		char *log = (char *)ft_memalloc(log_size);
-		clGetProgramBuildInfo(qbox->prog, qbox->dev, CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
-		printf("%s\n", log);
+		clGetProgramBuildInfo(qbox->prog, *dev,
+				CL_PROGRAM_BUILD_LOG, 0, NULL, &len);
+		if (!(buf = (char *)ft_memalloc(len)))
+			clean_all(NULL, qbox, ER_MALLOC);
+		clGetProgramBuildInfo(qbox->prog, *dev,
+				CL_PROGRAM_BUILD_LOG, len, buf, NULL);
+		write(1, buf, len);
+		free(buf);
 		clean_all(NULL, qbox, "cant build program\n");
 	}
 }
 
-void	init_queue(t_quebox *qbox)
+void		init_queue(t_quebox *qbox)
 {
-	int	ret;
+	int				ret;
 	cl_platform_id	platform;
+	cl_device_id	dev;
+	char			*buf;
 
+	buf = program_buffer(PROGRAM_FILE);
 	if (clGetPlatformIDs(1, &platform, NULL))
 		clean_all(NULL, NULL, "cant identify a platform\n");
-	if (clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &(qbox->dev), NULL))
+	if (clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &dev, NULL))
 		clean_all(NULL, NULL, "cant access device\n");
-	qbox->ctx = clCreateContext(NULL, 1, &(qbox->dev), NULL, NULL, &ret);
+	qbox->ctx = clCreateContext(NULL, 1, &dev, NULL, NULL, &ret);
 	if (ret)
+	{
+		free(buf);
 		clean_all(NULL, NULL, "cant create context\n");
-	qbox->queue = clCreateCommandQueue(qbox->ctx, qbox->dev, 0, &ret);
+	}
+	qbox->queue = clCreateCommandQueue(qbox->ctx, dev, 0, &ret);
 	if (ret)
-		clean_all(NULL, qbox, "cant create command queue\n");
-	init_prog(qbox, PROGRAM_FILE);
+	{
+		free(buf);
+		clReleaseContext(qbox->ctx);
+		clean_all(NULL, NULL, "cant create command queue\n");
+	}
+	cook_program(qbox, &dev, buf);
 }
 
-void	init_kern(t_kernbox *kbox, char *kern_name, t_quebox *qbox, t_imgbox *ibox)
+void		init_kern(t_kernbox *kbox, char *kname, t_quebox *qbox,
+		t_imgbox *ibox)
 {
 	int		ret;
 	int		bits;
 
-	kbox->kern = clCreateKernel(qbox->prog, kern_name, &ret);
+	kbox->kern = clCreateKernel(qbox->prog, kname, &ret);
 	if (ret)
 		clean_all(kbox, qbox, "cant create kernel\n");
 	kbox->map = (int *)mlx_get_data_addr(ibox->img, &bits, &ret, &ret);
 	kbox->map_buf = clCreateBuffer(qbox->ctx, CL_MEM_READ_WRITE |
-		CL_MEM_COPY_HOST_PTR, MAP_LEN * sizeof(int), kbox->map, &ret);
+			CL_MEM_COPY_HOST_PTR, IMG_SIZE * IMG_SIZE * sizeof(int),
+			kbox->map, &ret);
 	if (ret)
 		clean_all(kbox, qbox, "cant create buffer\n");
-//	cl_uint a;
-//	clGetKernelInfo(kbox->kern, CL_KERNEL_NUM_ARGS, 4, &a, NULL);
-//	printf("kern args: %d\n", a);
 	if (clSetKernelArg(kbox->kern, 0, sizeof(cl_mem), &(kbox->map_buf)))
 		clean_all(kbox, qbox, "cant set arguments for kernel\n");
-}
-
-void	reprint_all(t_kernbox *kbox, t_quebox *qbox, t_imgbox *ibox)
-{
-	int		ret;
-	size_t	items;
-
-	kbox->f_buf = clCreateBuffer(qbox->ctx, CL_MEM_READ_WRITE |
-			CL_MEM_COPY_HOST_PTR, 5 * sizeof(double), kbox->f, &ret);
-	if (ret)
-		clean_all(kbox, qbox, "cant create buffer\n");
-	kbox->i_buf = clCreateBuffer(qbox->ctx, CL_MEM_READ_WRITE |
-			CL_MEM_COPY_HOST_PTR, 2 * sizeof(int), kbox->i, &ret);
-	if (ret)
-		clean_all(kbox, qbox, "cant create buffer\n");
-	if (clSetKernelArg(kbox->kern, 1, sizeof(cl_mem), &(kbox->f_buf)))
-		clean_all(kbox, qbox, "cant set arguments for kernel\n");
-	if (clSetKernelArg(kbox->kern, 2, sizeof(cl_mem), &(kbox->i_buf)))
-		clean_all(kbox, qbox, "cant set arguments for kernel\n");
-	items = MAP_LEN;
-	if (clEnqueueNDRangeKernel(qbox->queue, kbox->kern, 1, NULL,
-				&items, NULL, 0, NULL, NULL))
-		clean_all(kbox, qbox, "cant enqueue the kernel\n");
-	if (clEnqueueReadBuffer(qbox->queue, kbox->map_buf, CL_TRUE, 0,
-				MAP_LEN * sizeof(int), kbox->map, 0, NULL, NULL))
-		clean_all(kbox, qbox, "cant read from buffer\n");
-	clReleaseMemObject(kbox->f_buf);
-	mlx_put_image_to_window(ibox->mlx, ibox->wnd, ibox->eraser, 150, 250);
-	mlx_string_put(ibox->mlx, ibox->wnd, 150, 250, HELP_COLOR, 
-			ft_itoa((ssize_t)(1 / kbox->f[2])));
-	mlx_put_image_to_window(ibox->mlx, ibox->wnd, ibox->eraser, 200, 350);
-	mlx_string_put(ibox->mlx, ibox->wnd, 200, 350, HELP_COLOR, 
-			ft_itoa(kbox->i[0]));
-	mlx_put_image_to_window(ibox->mlx, ibox->wnd, ibox->img, WND_W - IMG_SIZE,
-			WND_H - IMG_SIZE);
 }
