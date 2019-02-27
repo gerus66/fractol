@@ -34,9 +34,11 @@ $(NAME): $(OBJ)
 	gcc $(FLAGS) -c $< -o $@
 
 clean: 
+	make clean -C $(LIBDIR)
 	rm -f $(OBJ)
 
 fclean: clean
+	make fclean -C $(LIBDIR)
 	rm -f $(NAME) 
 
 re: fclean all
