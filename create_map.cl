@@ -12,7 +12,7 @@ kernel void	mandelbrot(global int *map, global double3 *pf, global int2 *pi)
 	int		i;
 	double2	f;
 	double2	prev;
-	double4	col; // x^2, y^2, c.x, c.y
+	double4	col;
 	
 	index = get_global_id(0);
 	col.zw = (double2){pf[0].s0 + (index % 1000) * pf[0].s2, 
@@ -47,10 +47,10 @@ kernel void	mandelbrot(global int *map, global double3 *pf, global int2 *pi)
 ** pf.s0 - left_upper_corner.x
 ** pf.s1 - left_upper_corner.y
 ** pf.s2 - scale
+** pf.s3 - z0.x
+** pf.s4 - z0.y
 ** pi.s0 - n of iterations
 ** pi.s1 - parameter for color
-** pi.s2 - z0.x
-** pi.s3 - z0.y
 */
 
 kernel void	julia(global int *map, global double8 *pf, global int2 *pi)
@@ -59,7 +59,7 @@ kernel void	julia(global int *map, global double8 *pf, global int2 *pi)
 	int		i;
 	double2	f;
 	double2	prev;
-	double4	col; // x^2, y^2, c.x, c.y
+	double4	col;
 	
 
 	index = get_global_id(0);
@@ -105,7 +105,7 @@ kernel void	ship(global int *map, global double3 *pf, global int2 *pi)
 	int		i;
 	double2	f;
 	double2	prev;
-	double4	col; // x^2, y^2, c.x, c.y
+	double4	col;
 	
 	index = get_global_id(0);
 	col.zw = (double2){pf[0].s0 + (index % 1000) * pf[0].s2, 
@@ -116,7 +116,8 @@ kernel void	ship(global int *map, global double3 *pf, global int2 *pi)
 	i = -1;
 	while (++i < pi[0].s0 && col.x + col.y < 4)
 	{
-		f.xy = (double2){col.x - col.y + col.z, 2 * fabs(f.x) * fabs(f.y) + col.w};
+		f.xy = (double2){col.x - col.y + col.z, 
+			2 * fabs(f.x) * fabs(f.y) + col.w};
 		if (prev.x == f.x && prev.y == f.y)
 		{
 			map[index] = 0;
