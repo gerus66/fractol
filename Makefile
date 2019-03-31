@@ -19,8 +19,8 @@ LIB = libft/libft.a
 LIBDIR = libft/
 FLAGS = -Wall -Wextra -Werror
 MFL = -lmlx -framework OpenGL -framework AppKit -framework OpenCL
-MLX = /usr/local/lib/
-MLXH = /usr/local/include
+MLX = MLX/
+MLXH = MLX/
 
 all: lib $(NAME)
 
