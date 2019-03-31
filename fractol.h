@@ -6,7 +6,7 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 15:55:54 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/27 07:16:46 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/03/31 17:59:24 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ typedef struct	s_kernbox
 # define SHIP "ship"
 
 # define ER_MALLOC "cant malloc it!\n"
-# define USAGE "usage: ./fractol [ mandelbrot | julia | ship]\n"
+# define USAGE "usage: ./fractol [ '' | mandelbrot | julia | ship ]\n"
 
 /*
 ** OpenCL enviroment

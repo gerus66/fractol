@@ -6,7 +6,7 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/16 15:47:17 by mbartole          #+#    #+#             */
-/*   Updated: 2019/02/27 04:45:39 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/03/31 17:08:39 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,13 +85,15 @@ int				main(int argc, char **argv)
 	t_imgbox	ibox;
 	t_quebox	qbox;
 	t_kernbox	kbox;
+	char		*name;
 
-	if (argc != 2 || (ft_strcmp(argv[1], MAND) && ft_strcmp(argv[1], JUL)
-				&& ft_strcmp(argv[1], SHIP)))
+	name = (argc == 2) ? argv[1] : MAND;
+	if (argc > 2 || (ft_strcmp(name, MAND) && ft_strcmp(name, JUL)
+				&& ft_strcmp(name, SHIP)))
 		clean_all(NULL, NULL, USAGE);
 	init_image(&ibox);
 	init_queue(&qbox);
-	init_fractol(&kbox, &qbox, &ibox, argv[1]);
+	init_fractol(&kbox, &qbox, &ibox, name);
 	reprint_all(&kbox, &qbox, &ibox);
 	mlx_hook(ibox.wnd, 17, 0, xclose, (int *[]){(int *)&kbox, (int *)&qbox});
 	mlx_hook(ibox.wnd, 2, 0, keyboard,
