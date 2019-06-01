@@ -1,31 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_striter.c                                       :+:      :+:    :+:   */
+/*   gnl.h                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/11/22 05:35:16 by mbartole          #+#    #+#             */
-/*   Updated: 2018/11/23 12:50:45 by mbartole         ###   ########.fr       */
+/*   Created: 2019/04/26 12:23:02 by mbartole          #+#    #+#             */
+/*   Updated: 2019/04/26 12:25:18 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#ifndef GNL_H
+# define GNL_H
 
-char	*ft_strmap(char const *s, char (*f)(char))
-{
-	char	*new;
-	int		i;
+# include "libft.h"
 
-	if (!s)
-		return (NULL);
-	if (!(new = ft_strdup(s)))
-		return (NULL);
-	i = 0;
-	while (s[i])
-	{
-		new[i] = f(s[i]);
-		i++;
-	}
-	return (new);
-}
+# define BUFF_SIZE 100
+
+int	get_next_line(const int fd, char **line);
+
+#endif

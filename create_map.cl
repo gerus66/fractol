@@ -116,8 +116,8 @@ kernel void	ship(global int *map, global double3 *pf, global int2 *pi)
 	i = -1;
 	while (++i < pi[0].s0 && col.x + col.y < 4)
 	{
-		f.xy = (double2){col.x - col.y + col.z, 
-			2 * fabs(f.x) * fabs(f.y) + col.w};
+		f.xy = (double2){fabs(col.x - col.y + col.z), 
+			fabs(2 * (f.x) * (f.y) + col.w)};
 		if (prev.x == f.x && prev.y == f.y)
 		{
 			map[index] = 0;

@@ -6,15 +6,19 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 15:55:54 by mbartole          #+#    #+#             */
-/*   Updated: 2019/03/31 17:59:24 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/06/01 20:27:35 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef FRACTOL_H
 # define FRACTOL_H
 
-# include "OpenCL/opencl.h"
-# include "libft/libft.h"
+# ifdef MAC
+#  include <OpenCL/opencl.h>
+# else
+#  include <CL/cl.h>
+# endif
+# include "libft.h"
 # include "mlx.h"
 # include <math.h>
 # include <fcntl.h>

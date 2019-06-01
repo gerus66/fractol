@@ -1,44 +1,45 @@
-# q
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: ehugh-be <marvin@42.fr>                    +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2018/10/29 15:05:00 by ehugh-be          #+#    #+#              #
-#    Updated: 2018/10/29 17:52:30 by ehugh-be         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
+OS = $(shell uname)
 
 NAME = fractol
+
 SRC = $(wildcard *.c) 
 OBJ = $(SRC:.c=.o)
 HDR = fractol.h
-LIB = libft/libft.a
-LIBDIR = libft/
-FLAGS = -Wall -Wextra -Werror
-MFL = -lmlx -framework OpenGL -framework AppKit -framework OpenCL
-MLX = MLX/
-MLXH = MLX/
 
-all: lib $(NAME)
+LIB = lib
+INC = includes
 
-lib:
-	make -C $(LIBDIR)
+LIBFT = $(LIB)/libft.a
+
+ifeq ($(OS), Darwin)
+	LIBMLX = $(LIB)/mlx_macos.a
+	W_FLAGS = -Wall -Wextra -Werror
+	FLAGS = -framework OpenGL -framework AppKit
+	FLAGS += -framework OpenCL
+	CFLAGS = -DMAC
+else
+ifeq ($(OS), Linux)
+# TODO
+#	LIBMLX = $(LIB)/mlx_linux.a
+#	FLAGS = -lmlx -lXext -lX11
+#	FLAGS += -lOpenCL
+else
+	@echo "Cant make it on your system, sorry.."
+endif
+endif
+
+all: $(NAME)
 
 $(NAME): $(OBJ)
-	gcc $(LIB) -I $(MLXH) -L $(MLX) $(MFL) $(OBJ) -o $(NAME)
+	gcc -I $(INC) $(LIBFT) $(LIBMLX) $(FLAGS) $(OBJ) -o $(NAME)
 
-%.o: %.c $(HDR) $(LIB)
-	gcc $(FLAGS) -c $< -o $@
+%.o: %.c $(HDR)
+	gcc -I $(INC) $(CFLAGS) $(W_FLAGS) -c $< -o $@
 
 clean: 
-	make clean -C $(LIBDIR)
 	rm -f $(OBJ)
 
 fclean: clean
-	make fclean -C $(LIBDIR)
 	rm -f $(NAME) 
 
 re: fclean all
