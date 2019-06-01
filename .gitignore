@@ -1,2 +1,4 @@
 *.o
 fractol
+README.md
+readme/*
