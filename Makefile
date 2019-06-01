@@ -2,7 +2,7 @@ OS = $(shell uname)
 
 NAME = fractol
 
-SRC = $(wildcard *.c) 
+SRC = srcs/$(wildcard *.c) 
 OBJ = $(SRC:.c=.o)
 HDR = fractol.h
 

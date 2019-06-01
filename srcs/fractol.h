@@ -6,7 +6,7 @@
 /*   By: mbartole <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 15:55:54 by mbartole          #+#    #+#             */
-/*   Updated: 2019/06/01 20:27:35 by mbartole         ###   ########.fr       */
+/*   Updated: 2019/06/01 21:49:32 by mbartole         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ typedef struct	s_kernbox
 # define SC_COEF 1.2
 # define MAX_DEPTH 200000
 
-# define PROGRAM_FILE "create_map.cl"
+# define PROGRAM_FILE "scrs/create_map.cl"
 
 # define START_X -2.0
 # define START_Y 2.0
