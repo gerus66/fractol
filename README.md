@@ -4,7 +4,7 @@
 * Julia (Mandelbrot)
 * Burning ship
 
-Вычисления на OpenCL, визуализация на miniLibX
+Вычисления на _OpenCL_, визуализация на _miniLibX_
 ### Run
 _macos_: `make & ./fractol`
 
