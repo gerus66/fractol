@@ -2,12 +2,12 @@ OS = $(shell uname)
 
 NAME = fractol
 
-SRC = srcs/$(wildcard *.c) 
+SRC = $(wildcard ./srcs/*.c) 
 OBJ = $(SRC:.c=.o)
-HDR = fractol.h
+HDR = ./srcs/fractol.h
 
-LIB = lib
-INC = includes
+LIB = ./lib
+INC = ./includes
 
 LIBFT = $(LIB)/libft.a
 
