@@ -1,10 +1,10 @@
 ## FractOl
-Визуализатор трех фракталов ([здесь](https://github.com/gerus66/fractol/blob/master/readme/fract_ol.en.pdf) подробнее)
-на основе OpenCL - 
+Визуализатор трех фракталов ([здесь](https://github.com/gerus66/fractol/blob/master/readme/fract_ol.en.pdf) подробнее) - 
 * Mandelbrot
 * Julia (Mandelbrot)
 * Burning ship
 
+Вычисления на OpenCL, визуализация на miniLibX
 ### Run
 _macos_: `make & ./fractol`
 
