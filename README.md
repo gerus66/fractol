@@ -1,21 +1,20 @@
-## FractOl
-Визуализатор трех фракталов ([здесь](https://github.com/gerus66/fractol/blob/master/readme/fract_ol.en.pdf) подробнее) - 
-* Mandelbrot
-* Julia (Mandelbrot)
-* Burning ship
+## Fractol
+_[full version in pdf](https://github.com/gerus66/fractol/blob/master/readme/fract_ol.en.pdf)_ \
+Animation of popular fractals - Mandelbrot, Julia (variation of Mandelbrot), Burning ship \
+Calculated by _OpenCL_
 
-Вычисления на _OpenCL_, визуализация на _miniLibX_
 ### Run
-_macos_: `make & ./fractol`
+_macos:_ \
+`make & ./fractol`
 
-_linux_: в процессе тестирования
+_linux: in progress_
 
-### Опции интерфейса
-* Переключение между фракталами
-* Изменение масштаба колесом мыши (масштабируется в местоположение курсора)
-* `left` `right` Изменение цвета
-* Движение с зажатой левой кнопкой мыши
-* Julia: изменение параметра с зажатой правой кнопкой мыши
+### Control options:
+* switch between fractals
+* scale by mouse wheel (from / into cursor)
+* change color by `<` `>`
+* move with left mouse button pressed
+* Julia: changing with right mouse button pressed 
 ### Mandelbrot
 ![Mandelbrot](https://github.com/gerus66/fractol/blob/master/readme/fr1.png)
 ![Mandelbrot](https://github.com/gerus66/fractol/blob/master/readme/fr2.png)
@@ -24,5 +23,7 @@ _linux_: в процессе тестирования
 ![Julia](https://github.com/gerus66/fractol/blob/master/readme/fr3.png)
 ### Burning ship
 ![Burning ship](https://github.com/gerus66/fractol/blob/master/readme/fr4.png)
+
 ### Codestyle
-Проект написан в строгом соответствии с [Norminette codestyle](https://github.com/gerus66/norme)
+Developed in strict accordance with _[Norminette codestyle](https://github.com/gerus66/norme)_ \
+Based on selfmade _[libft library](https://github.com/gerus66/libft)_
